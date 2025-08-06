@@ -1,0 +1,50 @@
+# config_data/config.py.example
+# ЭТО ФАЙЛ-ШАБЛОН.
+# СКОПИРУЙТЕ ЕГО В ФАЙЛ config.py И ЗАПОЛНИТЕ СВОИМИ ДАННЫМИ.
+
+from dataclasses import dataclass
+
+@dataclass
+class BotConfig:
+    token: str
+    admin_id: int
+
+@dataclass
+class GptConfig:
+    api_key: str
+    base_url: str
+    model: str
+
+@dataclass
+class Settings:
+    allowed_chat_id: int
+
+@dataclass
+class Config:
+    bot: BotConfig
+    gpt: GptConfig
+    settings: Settings
+
+def load_config():
+    """
+    Загружает конфигурацию из этого файла.
+    """
+    return Config(
+        bot=BotConfig(
+            token='YOUR_TELEGRAM_BOT_TOKEN_HERE',  # <-- ВСТАВЬТЕ СЮДА ВАШ TELEGRAM ТОКЕН
+            admin_id=7485721661                     # <-- УКАЖИТЕ ВАШ TELEGRAM ID
+        ),
+        gpt=GptConfig(
+            api_key="YOUR_OPENAI_API_KEY_HERE",      # <-- ВСТАВЬТЕ СЮДА ВАШ OPENAI КЛЮЧ
+            base_url="https://api.chatanywhere.tech/v1",
+            model="gpt-4o-mini"
+        ),
+        settings=Settings(
+            allowed_chat_id=-1001234567890         # <-- УКАЖИТЕ ID РАЗРЕШЕННОЙ БЕСЕДЫ
+        )
+    )
+
+# Эту строку можно оставить или убрать, она не мешает. 
+# В основном коде мы импортируем load_config, а не config.
+# Но для чистоты лучше ее убрать в шаблоне.
+# config = load_config()
