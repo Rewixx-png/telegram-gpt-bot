@@ -42,7 +42,7 @@
 ### 1. Клонирование репозитория
 
 ```bash
-git clone https://github.com/YourUsername/telegram-gpt-bot.git
+git clone https://github.com/Rewixx-png/telegram-gpt-bot.git
 cd telegram-gpt-bot
 ```
 
