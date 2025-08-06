@@ -1,39 +1,32 @@
 # handlers/topic_handler.py
-
 import logging
 from aiogram import Router, F, types
+from aiogram.filters import Command
 from config_data.config import config
-from services.gpt_service import get_gpt_response
+from services import gpt_service, history_service
 
-# Создаем роутер для этого модуля
 router = Router()
+router.message.filter(F.chat.id == config.settings.allowed_chat_id)
 
-# Фильтруем сообщения: только из разрешенного чата и только текстовые
-router.message.filter(F.chat.id == config.settings.allowed_chat_id, F.text)
+@router.message(Command("reset"))
+async def handle_reset_command_in_topic(message: types.Message):
+    """Обрабатывает команду /reset в группе."""
+    await history_service.clear_history(message.from_user.id)
+    await message.reply("✅ Ваша личная история общения с ботом была очищена.")
 
-@router.message()
+@router.message(F.text)
 async def handle_topic_message(message: types.Message):
-    """
-    Обрабатывает сообщения в разрешенном чате, отправляет их в GPT
-    и возвращает ответ в тот же топик.
-    """
-    # Мы по-прежнему получаем thread_id, на случай если он понадобится для чего-то еще
-    thread_id = message.message_thread_id
-    user_prompt = message.text
+    bot_info = await message.bot.get_me()
+    is_reply_to_bot = message.reply_to_message and message.reply_to_message.from_user.id == bot_info.id
+    is_mention_to_bot = message.text and f"@{bot_info.username}" in message.text
+    if not is_reply_to_bot and not is_mention_to_bot:
+        return
 
-    logging.info(f"Запрос в топике {thread_id}: '{user_prompt}'")
-    
-    # Получаем ответ от GPT через наш сервис
-    gpt_response = await get_gpt_response(user_prompt)
-
+    user_id = message.from_user.id
+    user_prompt = message.text.replace(f"@{bot_info.username}", "").strip()
+    logging.info(f"Запрос к боту от {user_id} в топике: '{user_prompt}'")
+    gpt_response = await gpt_service.get_gpt_response(user_id, user_prompt)
     if gpt_response:
-        # ---> ВОТ ИСПРАВЛЕНИЕ <---
-        # Просто используем reply без лишних параметров.
-        # Aiogram сам поймет, что нужно ответить в тот же топик.
         await message.reply(text=gpt_response)
-        logging.info("Ответ от GPT успешно отправлен.")
     else:
-        # Для сообщений об ошибках поступаем так же.
-        error_message = "Произошла ошибка при обращении к нейросети. Попробуйте позже."
-        await message.reply(text=error_message)
-        logging.warning("Не удалось получить ответ от GPT.")
+        await message.reply("Произошла ошибка при обращении к нейросети.")

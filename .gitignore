@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+
+# Файлы базы данных SQLite
+*.db
+*.db-journal
