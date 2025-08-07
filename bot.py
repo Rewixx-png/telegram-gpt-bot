@@ -3,43 +3,47 @@
 import asyncio
 import logging
 from aiogram import Bot, Dispatcher
-# DefaultBotProperties больше не нужен, убираем его импорт
 from config_data.config import config
-from handlers import topic_handler, private_chat_handler
-from services import history_service
+
+# Импортируем наши модули
+from handlers import topic_handler, private_chat_handler, group_events_handler
+from services import history_service, scheduler_service
 
 async def main():
     """
     Основная функция для настройки и запуска бота.
     """
-    # Настройка логирования
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
     )
 
-    # Инициализируем базу данных
-    logging.info("Инициализация базы данных истории...")
+    logging.info("Инициализация базы данных...")
     await history_service.init_db()
     
     logging.info("Запуск бота...")
 
-    # --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
-    # Инициализируем бота без настроек форматирования по умолчанию.
-    # Теперь все сообщения будут отправляться как обычный текст.
     bot = Bot(token=config.bot.token)
-    
     dp = Dispatcher()
 
-    # Подключаем роутеры
+    # --- Подключаем роутеры ---
+    # Важно: log_router должен идти первым, чтобы он ловил все сообщения до того,
+    # как их могут перехватить другие хендлеры и остановить обработку.
+    dp.include_router(topic_handler.log_router)
+    
     dp.include_router(topic_handler.router)
     dp.include_router(private_chat_handler.router)
+    dp.include_router(group_events_handler.router)
     
-    # Удаляем старые вебхуки
-    await bot.delete_webhook(drop_pending_updates=True)
+    # --- Запускаем планировщик ---
+    scheduler_service.setup_scheduler(bot)
     
-    # Запускаем polling
-    await dp.start_polling(bot)
+    try:
+        await bot.delete_webhook(drop_pending_updates=True)
+        await dp.start_polling(bot)
+    finally:
+        await bot.session.close()
+
 
 if __name__ == "__main__":
     try:
