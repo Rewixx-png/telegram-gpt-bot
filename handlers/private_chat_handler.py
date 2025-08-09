@@ -2,6 +2,7 @@
 import logging
 from aiogram import Router, F, types
 from aiogram.filters import Command
+from aiogram.types import FSInputFile
 from config_data.config import config
 from services import gpt_service, history_service
 
@@ -19,8 +20,21 @@ async def handle_private_message_from_admin(message: types.Message):
     user_id = message.from_user.id
     user_prompt = message.text
     logging.info(f"Получен личный запрос от админа {user_id}: '{user_prompt}'")
-    gpt_response = await gpt_service.get_gpt_response(user_id, user_prompt)
-    if gpt_response:
-        await message.answer(text=gpt_response)
+    
+    # Получаем ответ и, возможно, путь к файлу
+    text_response, file_to_send = await gpt_service.get_gpt_response(user_id, user_prompt)
+
+    if file_to_send:
+        try:
+            # Отправляем фото
+            photo = FSInputFile(file_to_send)
+            await message.answer_photo(photo, caption=text_response or "Скриншот готов.")
+        except Exception as e:
+            logging.error(f"Не удалось отправить файл {file_to_send}: {e}")
+            await message.answer("Не смог отправить скриншот, похоже, файл не найден или что-то сломалось.")
+    elif text_response:
+        # Отправляем обычный текстовый ответ
+        await message.answer(text=text_response)
     else:
+        # Сообщаем об ошибке
         await message.answer("Произошла ошибка при обращении к нейросети. Попробуйте позже.")

@@ -3,6 +3,7 @@
 import logging
 from aiogram import Router, F, types
 from aiogram.filters import Command
+from aiogram.types import FSInputFile
 from config_data.config import config
 from services import gpt_service, history_service
 
@@ -26,7 +27,6 @@ async def handle_topic_message(message: types.Message):
     is_reply_to_bot = message.reply_to_message and message.reply_to_message.from_user.id == bot_info.id
     is_mention_to_bot = message.text and f"@{bot_info.username}" in message.text
     
-    # Если это не прямое обращение к боту, выходим из этого хендлера
     if not is_reply_to_bot and not is_mention_to_bot:
         return
 
@@ -35,11 +35,22 @@ async def handle_topic_message(message: types.Message):
     
     logging.info(f"Запрос к боту от {user_id} в топике: '{user_prompt}'")
     
-    gpt_response = await gpt_service.get_gpt_response(user_id, user_prompt)
+    # Получаем ответ и, возможно, путь к файлу
+    text_response, file_to_send = await gpt_service.get_gpt_response(user_id, user_prompt)
     
-    if gpt_response:
-        await message.reply(text=gpt_response)
+    if file_to_send:
+        try:
+            # Отправляем фото в ответ на сообщение
+            photo = FSInputFile(file_to_send)
+            await message.reply_photo(photo, caption=text_response or "Скриншот готов.")
+        except Exception as e:
+            logging.error(f"Не удалось отправить файл {file_to_send}: {e}")
+            await message.reply("Не смог отправить скриншот, похоже, файл не найден или что-то сломалось.")
+    elif text_response:
+        # Отправляем обычный текстовый ответ
+        await message.reply(text=text_response)
     else:
+        # Сообщаем об ошибке
         await message.reply("Произошла ошибка при обращении к нейросети.")
 
 
@@ -54,5 +65,12 @@ async def log_all_messages(message: types.Message):
     и сохраняет их в базу данных для статистики.
     Он не отвечает пользователю.
     """
-    # Мы не хотим логировать сообщения от самого бота
-    bo
+    bot_info = await message.bot.get_me()
+    if message.from_user.id == bot_info.id:
+        return
+
+    await history_service.log_user_message(
+        user_id=message.from_user.id,
+        username=message.from_user.username,
+        text=message.text
+    )

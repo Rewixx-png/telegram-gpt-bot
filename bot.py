@@ -27,11 +27,15 @@ async def main():
     dp = Dispatcher()
 
     # --- Подключаем роутеры ---
-    # Важно: log_router должен идти первым, чтобы он ловил все сообщения до того,
-    # как их могут перехватить другие хендлеры и остановить обработку.
-    dp.include_router(topic_handler.log_router)
+    # ИСПРАВЛЕН ПОРЯДОК:
+    # Сначала нужно подключать роутер, который отвечает на конкретные действия (упоминания, ответы).
+    # И только потом - роутер, который ловит ВСЕ остальные сообщения для логирования.
+    # Если сделать наоборот, log_router будет "поглощать" все сообщения, и до router'а,
+    # который должен отвечать, они просто не дойдут.
     
-    dp.include_router(topic_handler.router)
+    dp.include_router(topic_handler.router)          # <--- ЭТОТ ТЕПЕРЬ ПЕРВЫЙ
+    dp.include_router(topic_handler.log_router)      # <--- А ЭТОТ ВТОРОЙ
+    
     dp.include_router(private_chat_handler.router)
     dp.include_router(group_events_handler.router)
     
