@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  gpt-bot:
+    # Собираем образ из Dockerfile в текущей директории
+    build: .
+    # Имя контейнера для удобства
+    container_name: gpt-bot
+    # Перезапускать контейнер, если он упал, но не при остановке вручную
+    restart: unless-stopped
+    # Подключаем файл .env с нашими секретами
+    env_file:
+      - .env
+    # Прокидываем volumes, чтобы не проебать базу данных и скриншоты при перезапуске
+    volumes:
+      - ./history.db:/app/history.db
+      - ./website_screenshot.png:/app/website_screenshot.png

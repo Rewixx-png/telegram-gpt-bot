@@ -1,9 +1,20 @@
-config_data/config.py
+# Python
 __pycache__/
 *.pyc
-.venv/
 venv/
+.venv/
 
-# Файлы базы данных SQLite
-*.db
-*.db-journal
+# Secrets
+.env
+*.env
+
+# Database
+history.db
+history.db-journal
+
+# Playwright screenshot
+website_screenshot.png
+
+# IDE specific
+.idea/
+.vscode/
