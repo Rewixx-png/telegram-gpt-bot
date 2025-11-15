@@ -2,3 +2,5 @@ aiogram
 openai
 aiosqlite
 apscheduler
+playwright
+loguru

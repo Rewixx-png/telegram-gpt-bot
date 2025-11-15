@@ -1,7 +1,8 @@
 # bot.py
 
 import asyncio
-import logging
+import sys
+from loguru import logger
 from aiogram import Bot, Dispatcher
 from config_data.config import config
 
@@ -13,15 +14,18 @@ async def main():
     """
     Основная функция для настройки и запуска бота.
     """
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+    # --- Настраиваем охуенные логи ---
+    logger.remove()
+    logger.add(
+        sys.stderr, 
+        format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+        colorize=True
     )
 
-    logging.info("Инициализация базы данных...")
+    logger.info("Инициализация базы данных...")
     await history_service.init_db()
     
-    logging.info("Запуск бота...")
+    logger.info("Запуск бота...")
 
     bot = Bot(token=config.bot.token)
     dp = Dispatcher()
@@ -53,4 +57,4 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
-        logging.info("Бот остановлен.")
+        logger.info("Бот остановлен.")

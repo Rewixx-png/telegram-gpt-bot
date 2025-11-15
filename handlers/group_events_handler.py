@@ -1,6 +1,6 @@
 # handlers/group_events_handler.py
 
-import logging
+from loguru import logger
 from aiogram import Router, F, types
 from config_data.config import config
 # Импортируем нашу новую функцию из сервиса
@@ -19,7 +19,7 @@ async def welcome_new_member(message: types.Message):
     # message.new_chat_members - это список, т.к. можно добавить сразу несколько человек
     for member in message.new_chat_members:
         user_name = member.first_name
-        logging.info(f"В чат вошел новый пользователь: {user_name} (ID: {member.id})")
+        logger.info(f"В чат вошел новый пользователь: {user_name} (ID: {member.id})")
 
         # Создаем креативный промпт для GPT
         prompt = (
@@ -37,8 +37,8 @@ async def welcome_new_member(message: types.Message):
             # message.answer ответит на сервисное сообщение о входе,
             # что будет выглядеть как обычное сообщение в чате.
             await message.answer(welcome_text)
-            logging.info(f"Сгенерировано и отправлено приветствие для {user_name}.")
+            logger.info(f"Сгенерировано и отправлено приветствие для {user_name}.")
         else:
             # Если GPT не ответил, отправим стандартное приветствие
             await message.answer(f"Привет, {user_name}! Добро пожаловать в наш чат! 👋")
-            logging.warning("Не удалось сгенерировать приветствие от GPT, отправлено стандартное.")
+            logger.warning("Не удалось сгенерировать приветствие от GPT, отправлено стандартное.")

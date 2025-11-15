@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   gpt-bot:
     # Собираем образ из Dockerfile в текущей директории
@@ -11,7 +9,6 @@ services:
     # Подключаем файл .env с нашими секретами
     env_file:
       - .env
-    # Прокидываем volumes, чтобы не проебать базу данных и скриншоты при перезапуске
+    # Прокидываем ЦЕЛУЮ ПАПКУ, чтобы не проебать базу данных и скриншоты
     volumes:
-      - ./history.db:/app/history.db
-      - ./website_screenshot.png:/app/website_screenshot.png
+      - ./data:/app/data

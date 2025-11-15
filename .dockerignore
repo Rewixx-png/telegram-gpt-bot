@@ -1,21 +1,12 @@
-# Git and Docker files
-.git/
+# Исключаем все, что не нужно для работы бота внутри контейнера
+
+.git
 .gitignore
 .dockerignore
-Dockerfile
-docker-compose.yml
-
-# Secrets
-.env
-*.env
-
-# Documentation
 README.md
-
-# Python cache
+data/
+venv/
+env/
 __pycache__/
-*.pyc
-
-# Database file
-history.db
-history.db-journal
+.idea/
+.vscode/

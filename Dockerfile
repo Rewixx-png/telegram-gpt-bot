@@ -12,7 +12,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Устанавливаем Playwright и его зависимости (браузер) для скриншотов.
 # ВНИМАНИЕ: Это, блядь, добавит веса нашему образу.
-RUN playwright install --with-deps chromium
+# <-- ВОТ ЭТА СТРОКА ТЕПЕРЬ ПРАВИЛЬНАЯ
+RUN python -m playwright install --with-deps chromium
 
 # Копируем весь остальной код проекта в рабочую директорию
 COPY . .

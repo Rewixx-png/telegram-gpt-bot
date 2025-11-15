@@ -1,5 +1,5 @@
 # handlers/private_chat_handler.py
-import logging
+from loguru import logger
 from aiogram import Router, F, types
 from aiogram.filters import Command
 from aiogram.types import FSInputFile
@@ -19,7 +19,7 @@ async def handle_reset_command(message: types.Message):
 async def handle_private_message_from_admin(message: types.Message):
     user_id = message.from_user.id
     user_prompt = message.text
-    logging.info(f"Получен личный запрос от админа {user_id}: '{user_prompt}'")
+    logger.info(f"Получен личный запрос от админа {user_id}: '{user_prompt}'")
     
     # Получаем ответ и, возможно, путь к файлу
     text_response, file_to_send = await gpt_service.get_gpt_response(user_id, user_prompt)
@@ -30,7 +30,7 @@ async def handle_private_message_from_admin(message: types.Message):
             photo = FSInputFile(file_to_send)
             await message.answer_photo(photo, caption=text_response or "Скриншот готов.")
         except Exception as e:
-            logging.error(f"Не удалось отправить файл {file_to_send}: {e}")
+            logger.error(f"Не удалось отправить файл {file_to_send}: {e}")
             await message.answer("Не смог отправить скриншот, похоже, файл не найден или что-то сломалось.")
     elif text_response:
         # Отправляем обычный текстовый ответ

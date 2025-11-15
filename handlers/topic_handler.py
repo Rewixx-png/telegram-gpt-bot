@@ -1,6 +1,6 @@
 # handlers/topic_handler.py
 
-import logging
+from loguru import logger
 from aiogram import Router, F, types
 from aiogram.filters import Command
 from aiogram.types import FSInputFile
@@ -33,7 +33,7 @@ async def handle_topic_message(message: types.Message):
     user_id = message.from_user.id
     user_prompt = message.text.replace(f"@{bot_info.username}", "").strip()
     
-    logging.info(f"Запрос к боту от {user_id} в топике: '{user_prompt}'")
+    logger.info(f"Запрос к боту от {user_id} в топике: '{user_prompt}'")
     
     # Получаем ответ и, возможно, путь к файлу
     text_response, file_to_send = await gpt_service.get_gpt_response(user_id, user_prompt)
@@ -44,7 +44,7 @@ async def handle_topic_message(message: types.Message):
             photo = FSInputFile(file_to_send)
             await message.reply_photo(photo, caption=text_response or "Скриншот готов.")
         except Exception as e:
-            logging.error(f"Не удалось отправить файл {file_to_send}: {e}")
+            logger.error(f"Не удалось отправить файл {file_to_send}: {e}")
             await message.reply("Не смог отправить скриншот, похоже, файл не найден или что-то сломалось.")
     elif text_response:
         # Отправляем обычный текстовый ответ

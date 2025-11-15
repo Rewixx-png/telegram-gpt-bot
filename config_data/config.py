@@ -16,6 +16,7 @@ class GptConfig:
     tavily_api_key: str # Добавили ключ для Tavily
     base_url: str
     model: str
+    system_prompt: str # Добавили системный промпт
 
 @dataclass
 class Settings:
@@ -34,7 +35,7 @@ def load_config():
     # Проверяем, что все переменные на месте, иначе нахуй падаем с ошибкой.
     required_vars = [
         'TELEGRAM_BOT_TOKEN', 'ADMIN_ID', 'OPENAI_API_KEY', 
-        'TAVILY_API_KEY', 'ALLOWED_CHAT_ID'
+        'TAVILY_API_KEY', 'ALLOWED_CHAT_ID', 'SYSTEM_PROMPT'
     ]
     for var in required_vars:
         if not os.getenv(var):
@@ -49,7 +50,8 @@ def load_config():
             api_key=os.getenv('OPENAI_API_KEY'),
             tavily_api_key=os.getenv('TAVILY_API_KEY'),
             base_url=os.getenv('OPENAI_BASE_URL', "https://api.openai.com/v1"),
-            model=os.getenv('GPT_MODEL', "gpt-4o-mini")
+            model=os.getenv('GPT_MODEL', "gpt-4o-mini"),
+            system_prompt=os.getenv('SYSTEM_PROMPT')
         ),
         settings=Settings(
             allowed_chat_id=int(os.getenv('ALLOWED_CHAT_ID'))
